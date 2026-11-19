@@ -311,10 +311,15 @@ def auto_revise_tax_exemption_declaration(doc):
 	if not (use_thai_pit and auto_revise):
 		return
 
+	# HRMS payroll_period is None when no Payroll Period covers the slip dates
+	payroll_period = doc.payroll_period
+	if not payroll_period:
+		return
+
 	# Get existing salary and pvd
 	tax_exempt = frappe.db.get_value(
 		"Employee Tax Exemption Declaration",
-		{"employee": doc.employee, "payroll_period": doc.payroll_period.name, "docstatus": 1},
+		{"employee": doc.employee, "payroll_period": payroll_period.name, "docstatus": 1},
 		["name", "custom_is_opening_entry", "custom_opening_entry_date", "custom_yearly_salary", "custom_pvd_contribution"],
 		as_dict=1,
 		cache=True,
@@ -324,7 +329,7 @@ def auto_revise_tax_exemption_declaration(doc):
 	# Get new salary and pvd
 	params = {
 		"company": doc.company,
-		"payroll_period": doc.payroll_period,
+		"payroll_period": payroll_period.name,
 		"employee": doc.employee,
 		"is_opening_entry": tax_exempt.custom_is_opening_entry,
 		"opening_entry_date": tax_exempt.custom_opening_entry_date
