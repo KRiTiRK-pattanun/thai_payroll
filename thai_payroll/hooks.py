@@ -139,8 +139,13 @@ before_uninstall = "thai_payroll.setup.before_uninstall"
 # ---------------
 # Override standard doctype classes
 
-override_doctype_class = {
+# Salary Slip is extended (not overridden) so other apps (e.g. krit_erpnext) can
+# also customise it: override_doctype_class lets only the last app win.
+extend_doctype_class = {
     "Salary Slip": "thai_payroll.custom.salary_slip.SalarySlipThaiPayroll",
+}
+
+override_doctype_class = {
     "Payroll Period": "thai_payroll.custom.payroll_period.PayrollPeriodThaiPayroll",
     "Employee Tax Exemption Declaration": "thai_payroll.custom.employee_tax_exemption_declaration.EmployeeTaxExemptionDeclarationThaiPayroll",
 }

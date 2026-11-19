@@ -41,9 +41,13 @@ class SalarySlipThaiPayroll(SalarySlip):
 		
 		# Thai Payroll override
 		amount, additional_amount = row.amount, row.additional_amount
-		timesheet_component = self._salary_structure_doc.salary_component
+		timesheet_component = getattr(self, "_timesheet_component", None)
 
-		if (
+		# Branches below mirror HRMS v16 get_amount_based_on_payment_days,
+		# only the proration differs (default_amount / 30 instead of / total_working_days)
+		if not row.additional_salary and not row.default_amount:
+			pass
+		elif (
 			self.salary_structure
 			and cint(row.depends_on_payment_days)
 			and cint(self.total_working_days)
@@ -83,8 +87,12 @@ class SalarySlipThaiPayroll(SalarySlip):
 			and cint(row.depends_on_payment_days)
 		):
 			amount, additional_amount = 0, 0
-		elif not row.amount:
-			amount = flt(row.default_amount) + flt(row.additional_amount)
+		elif (
+			not row.amount
+			and row.additional_amount
+			and not (row.additional_salary and row.default_amount)  # overwritten amount is final
+		):
+			amount = flt(row.additional_amount)
 
 		# apply rounding
 		if frappe.db.get_value(
